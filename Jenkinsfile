@@ -41,6 +41,12 @@ pipeline {
     }
 
     stage('Archive') {
+      agent {
+        dockerfile {
+          filename 'lagairogo/carts-maven'
+        }
+
+      }
       steps {
         archiveArtifacts '**/target/*.jar'
       }
