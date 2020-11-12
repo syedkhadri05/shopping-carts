@@ -1,7 +1,13 @@
 pipeline {
-  agent any
+  agent none
   stages {
     stage('build') {
+      agent {
+        docker {
+          image 'lagairogo/carts-maven'
+        }
+
+      }
       steps {
         echo 'this is the first job'
         sh 'mvn compile'
@@ -9,6 +15,12 @@ pipeline {
     }
 
     stage('test') {
+      agent {
+        docker {
+          image 'lagairogo/carts-maven'
+        }
+
+      }
       steps {
         echo 'this is the second job'
         sh 'mvn test'
@@ -16,15 +28,28 @@ pipeline {
     }
 
     stage('package') {
+      agent {
+        docker {
+          image 'lagairogo/carts-maven'
+        }
+
+      }
       steps {
         echo 'this is the third job'
         sh 'mvn package'
       }
     }
 
-    stage('Archive') {
+    stage('Build and Publish') {
       steps {
-        archiveArtifacts '**/target/*.jar'
+        script {
+          docker.withRegistry('https://index.docker.io/v1/', 'dockerlogin') {
+            def dockerImage = docker.build("syedkhadri05/shopping-carts:v${env.BUILD_ID}", "./")
+            dockerImage.push()
+            dockerImage.push("latest")
+          }
+        }
+
       }
     }
 
